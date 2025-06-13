@@ -1,0 +1,17 @@
+{
+  "id": "com.dumbwood.app",
+  "version": "1.0.0",
+  "vendor": "myCompany",
+  "type": "web",
+  "main": "index.html",
+  "title": "dahlingapp",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "requiredPermissions": ["media", "network.query"],
+  "supportQuickStart": false,
+  "transparent": true,
+  "trustLevel": "netcast",
+  "accessibility": {
+    "supportsAudioGuidance": false
+  }
+}

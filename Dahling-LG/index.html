@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>My Web App</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        #scroll-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="webapp" src="https://www.dahling.dumbwood.com" allowfullscreen></iframe>
+    <div id="scroll-indicator">Use ▲ and ▼ on your remote to scroll</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/webostvjs@1.2.4/webOSTV.min.js"></script>
+    <script>
+        // Wait for iframe to load
+        document.getElementById('webapp').addEventListener('load', function() {
+            const iframeWindow = this.contentWindow;
+            const iframeDocument = iframeWindow.document;
+            const scrollStep = 100; // Adjust scroll amount as needed
+            
+            // Show scroll indicator temporarily
+            const indicator = document.getElementById('scroll-indicator');
+            indicator.style.display = 'block';
+            setTimeout(() => { indicator.style.display = 'none'; }, 3000);
+            
+            // Handle webOS remote keys
+            document.addEventListener('keydown', function(e) {
+                switch(e.keyCode) {
+                    case 38: // Up arrow
+                        iframeWindow.scrollBy({ top: -scrollStep, behavior: 'smooth' });
+                        e.preventDefault();
+                        break;
+                    case 40: // Down arrow
+                        iframeWindow.scrollBy({ top: scrollStep, behavior: 'smooth' });
+                        e.preventDefault();
+                        break;
+                    case 37: // Left arrow - optional
+                        iframeWindow.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+                        e.preventDefault();
+                        break;
+                    case 39: // Right arrow - optional
+                        iframeWindow.scrollBy({ left: scrollStep, behavior: 'smooth' });
+                        e.preventDefault();
+                        break;
+                }
+            });
+            
+            // Focus management for better navigation
+            iframeWindow.addEventListener('focus', function() {
+                // Ensure the iframe is scrollable
+                iframeDocument.body.style.overflow = 'auto';
+                iframeDocument.body.tabIndex = 0;
+                iframeDocument.body.focus();
+            });
+        });
+        
+        // Fallback for iframe content that blocks access
+        function injectScrollButtons() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .webos-scroll-btn {
+                    position: fixed;
+                    width: 80px;
+                    height: 80px;
+                    background: rgba(0,0,0,0.7);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    font-size: 40px;
+                    z-index: 1000;
+                    opacity: 0.7;
+                }
+                .webos-scroll-up { top: 20px; left: 50%; transform: translateX(-50%); }
+                .webos-scroll-down { bottom: 20px; left: 50%; transform: translateX(-50%); }
+            `;
+            document.head.appendChild(style);
+            
+            const upBtn = document.createElement('button');
+            upBtn.className = 'webos-scroll-btn webos-scroll-up';
+            upBtn.textContent = '▲';
+            upBtn.addEventListener('click', () => {
+                document.getElementById('webapp').contentWindow.scrollBy({ top: -100, behavior: 'smooth' });
+            });
+            
+            const downBtn = document.createElement('button');
+            downBtn.className = 'webos-scroll-btn webos-scroll-down';
+            downBtn.textContent = '▼';
+            downBtn.addEventListener('click', () => {
+                document.getElementById('webapp').contentWindow.scrollBy({ top: 100, behavior: 'smooth' });
+            });
+            
+            document.body.appendChild(upBtn);
+            document.body.appendChild(downBtn);
+        }
+        
+        // Try to access iframe after a delay
+        setTimeout(() => {
+            try {
+                const iframeDoc = document.getElementById('webapp').contentDocument;
+                if (!iframeDoc) {
+                    injectScrollButtons();
+                }
+            } catch (e) {
+                // Cross-origin issue - inject fallback buttons
+                injectScrollButtons();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
